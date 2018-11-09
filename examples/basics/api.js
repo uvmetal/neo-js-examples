@@ -13,7 +13,7 @@ process.on('unhandledRejection', (reason, promise) => {
   console.log('== API Example ==')
 
   /**
-   * Instantiate with testnet blockchain
+   * Instantiate with testnet blockchain.
    */
   const testnetNeo = new Neo({
     network: 'testnet',
@@ -24,13 +24,16 @@ process.on('unhandledRejection', (reason, promise) => {
     console.log('neo.mesh is now ready!')
 
     /**
-     * Perform query through API class
+     * Perform query through API class.
      */
     const count = await testnetNeo.api.getBlockCount()
     console.log('Testnet getBlockCount:', count)
     // <example response>
     // > Testnet getBlockCount: 1985630
 
+    /**
+     * Close all background process associate with the neo instance.
+     */
     testnetNeo.close()
     console.log('== THE END ==')
   })
