@@ -1,9 +1,25 @@
-# neo-js-examples
+# Code Examples for `neo-js`
 
-Target `neo-js` version: `0.10.0-rc.1`
+This project is currently test against `neo-js` version: `0.10.0-rc.1`
 
-To install specific branch:
+## Installation
 
-```js
-npm install git://github.com/CityOfZion/neo-js.git#develop
+Install the `neo-js` package using:
+
+```bash
+$ npm install --save @cityofzion/neo-js
 ```
+
+Alternatively, to access to the latest available code, you can reference to the git repository directly:
+
+```bash
+$ npm install --save git://github.com/CityOfZion/neo-js.git#develop
+```
+
+## Get Started
+
+Refer to self-documented code examples in `/examples` directory of this project.
+
+## License
+
+* Open-source [MIT](https://github.com/rockacola/neo-js-examples/blob/master/LICENSE.md).
