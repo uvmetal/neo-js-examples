@@ -1,0 +1,13 @@
+{
+  "name": "neo-js-examples",
+  "license": "MIT",
+  "scripts": {
+    "rebuild": "rm -rf ./node_modules && npm install",
+    "rebuild:hard": "rm -f ./package-lock.json && npm run rebuild",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "neo-js": "git://github.com/CityOfZion/neo-js.git#develop"
+  },
+  "devDependencies": {}
+}
