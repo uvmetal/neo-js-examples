@@ -63,17 +63,21 @@ const sleep = async (ms) => {
    * Fetch an active (determined to be online) node that has the lowest latency.
    */
   const fastestActiveNode = neo.mesh.getFastestNode(true)
-  console.log('fastestActiveNode:')
-  console.log('> endpoint:', fastestActiveNode.endpoint)
-  console.log('> lastSeenTimestamp:', fastestActiveNode.lastSeenTimestamp)
-  console.log('> latency:', fastestActiveNode.latency)
-  console.log('> blockHeight:', fastestActiveNode.blockHeight)
-  // <example response>
-  // > fastestActiveNode:
-  // > > endpoint: https://test2.cityofzion.io:443
-  // > > lastSeenTimestamp: 1541764019685
-  // > > latency: 916
-  // > > blockHeight: 1985659
+  if (fastestActiveNode) {
+    console.log('fastestActiveNode:')
+    console.log('> endpoint:', fastestActiveNode.endpoint)
+    console.log('> lastSeenTimestamp:', fastestActiveNode.lastSeenTimestamp)
+    console.log('> latency:', fastestActiveNode.latency)
+    console.log('> blockHeight:', fastestActiveNode.blockHeight)
+    // <example response>
+    // > fastestActiveNode:
+    // > > endpoint: https://test2.cityofzion.io:443
+    // > > lastSeenTimestamp: 1541764019685
+    // > > latency: 916
+    // > > blockHeight: 1985659  
+  } else {
+    console.log('Unable to find a fastestActiveNode.')
+  }
 
   /**
    * Close all background process associate with the neo instance.
