@@ -4,7 +4,7 @@
 const Neon = require('@cityofzion/neon-js')
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled promise rejection. Reason:', reason)
+  console.warn('Unhandled rejection. Reason:', reason)
 })
 
 // -- Parameters
