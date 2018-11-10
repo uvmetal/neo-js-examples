@@ -49,15 +49,15 @@ const sleep = async (ms) => {
      * Iterate through node list.
      */
     const node = neo.mesh.nodes[i]
-    console.log(`> #${i} ${node.endpoint} [isActive: ${node.isActive}] [blockHeight: ${node.blockHeight}] [latency: ${node.latency}]`)
+    console.log(`> #${i} ${node.endpoint} [isActive: ${node.isActive}] [blockHeight: ${node.blockHeight}] [latency: ${node.latency}] [UA: ${node.userAgent}]`)
   }
   // <example response>
   // > Analyze all nodes:
-  // > > #0 https://test1.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1169]
-  // > > #1 https://test2.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1180]
-  // > > #2 https://test3.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1155]
-  // > > #3 https://test4.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 886]
-  // > > #4 https://test5.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1294]
+  // > > #0 https://test1.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1169] [UA: /NEO:2.8.0/]
+  // > > #1 https://test2.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1180] [UA: /NEO:2.8.0/]
+  // > > #2 https://test3.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1155] [UA: /NEO:2.8.0/]
+  // > > #3 https://test4.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 886] [UA: /NEO:2.8.0/]
+  // > > #4 https://test5.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1294] [UA: /NEO:2.8.0/]
 
   /**
    * Fetch an active (determined to be online) node that has the lowest latency.

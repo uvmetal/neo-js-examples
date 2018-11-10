@@ -33,7 +33,7 @@ const reportIntervalMs = 10 * 1000
       console.log(`[${new Date()}]:`)
       for (let i=0; i<neo.mesh.nodes.length; i++) {
         const node = neo.mesh.nodes[i]
-        console.log(`> #${i} ${node.endpoint} [isActive: ${node.isActive}] [blockHeight: ${node.blockHeight}] [latency: ${node.latency}]`)
+        console.log(`> #${i} ${node.endpoint} [isActive: ${node.isActive}] [blockHeight: ${node.blockHeight}] [latency: ${node.latency}] [UA: ${node.userAgent}]`)
       }
       console.log()
     }, reportIntervalMs)
