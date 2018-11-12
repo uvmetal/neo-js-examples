@@ -67,8 +67,7 @@ const endpoints = [
   { endpoint: 'http://neo-node.com:10332' },
 ]
 const storageType = 'mongodb'
-// const dbConnectionString = 'mongodb://localhost/neo_mainnet'
-const dbConnectionString = 'mongodb://localhost/neo_mainnet_beck'
+const dbConnectionString = 'mongodb://localhost/neo_mainnet'
 const blockCollectionName = 'blocks'
 
 // -- Implementation
@@ -93,11 +92,11 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'warn' },
     },
     apiOptions: {
-      loggerOptions: { level: 'debug' },
+      loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
       startOnInit: false,
-      loggerOptions: { level: 'info' },
+      loggerOptions: { level: 'warn' },
     },
     loggerOptions: { level: 'info' },
   })
@@ -131,8 +130,16 @@ const blockCollectionName = 'blocks'
       return
     }
 
-    missingBlocks.forEach((missingHeight) => {
-      neo.api.getBlock(missingHeight)
-    })
+    console.log('attempt to sync for missing blocks...')
+    const MAX_SYNC = 5
+    const targetCount = missingBlocks.length > MAX_SYNC ? MAX_SYNC : missingBlocks.length
+    for (let i=0; i<targetCount; i++) {
+      const h = missingBlocks[i]
+      const b = await neo.api.getBlock(h)
+      console.log(`#${i} [${h}] hash: ${b.hash}`)
+    }
+
+    neo.close()
+    console.log('=== THE END ===')
   })
 })()
