@@ -4,7 +4,6 @@
  */
 const Neo = require('@cityofzion/neo-js').Neo
 const _ = require('lodash')
-const moment = require('moment')
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled rejection. Reason:', reason)
@@ -110,7 +109,6 @@ const blockCollectionName = 'blocks'
     const startHeight = 1
     const endHeight = storageBlockCount
     const report = await neo.storage.analyzeBlocks(startHeight, storageBlockCount)
-    // console.log('report:', report)
 
     const all = []
     for (let i = startHeight; i <= endHeight; i++) {
@@ -122,7 +120,6 @@ const blockCollectionName = 'blocks'
 
     const missingBlocks = _.difference(all, availableBlocks)
     console.log('missingBlocks count:', missingBlocks.length)
-    // console.log('missingBlocks:', missingBlocks)
 
     if (missingBlocks.length === 0) {
       neo.close()
@@ -131,12 +128,16 @@ const blockCollectionName = 'blocks'
     }
 
     console.log('attempt to sync for missing blocks...')
-    const MAX_SYNC = 5
+    const MAX_SYNC = 100
     const targetCount = missingBlocks.length > MAX_SYNC ? MAX_SYNC : missingBlocks.length
     for (let i=0; i<targetCount; i++) {
       const h = missingBlocks[i]
-      const b = await neo.api.getBlock(h)
-      console.log(`#${i} [${h}] hash: ${b.hash}`)
+      try {
+        const b = await neo.api.getBlock(h)
+        console.log(`#${i} [${h}] hash: ${b.hash}`)
+      } catch (err) {
+        console.log(`#${i} [${h}] Error message: ${err.message}`)
+      }
     }
 
     neo.close()
