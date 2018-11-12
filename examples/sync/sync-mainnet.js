@@ -66,7 +66,8 @@ const endpoints = [
   { endpoint: 'http://neo-node.com:10332' },
 ]
 const storageType = 'mongodb'
-const dbConnectionString = 'mongodb://localhost/neo_mainnet'
+// const dbConnectionString = 'mongodb://localhost/neo_mainnet'
+const dbConnectionString = 'mongodb://localhost/neo_mainnet_beck'
 const blockCollectionName = 'blocks'
 
 // -- Implementation
@@ -125,9 +126,12 @@ const blockCollectionName = 'blocks'
     console.log('Storage sync is now up-to-date!')
   })
 
+  // Live reporting
   const report = {
     successCount: 0,
     failedCount: 0,
+    missingCount: undefined,
+    excessiveCount: undefined,
     blockchainHeight: undefined,
     syncHeight: undefined,
     startAt: moment(),
@@ -142,8 +146,16 @@ const blockCollectionName = 'blocks'
       report.failedCount += 1
     }
   })
+  neo.syncer.on('blockVerification:missingBlocks', (payload) => {
+    // console.log('blockVerification:missingBlocks triggered. payload:', payload)
+    report.missingCount = payload.count
+  })
+  neo.syncer.on('blockVerification:excessiveBlocks', (payload) => {
+    // console.log('blockVerification:excessiveBlocks triggered. payload:', payload)
+    report.excessiveCount = payload.count
+  })
 
-  // Log sync report periodically
+  // Generate sync report
   const SYNC_REPORT_INTERVAL_MS = 5 * 1000
   setInterval(() => {
     if (report.successCount === 0) {
@@ -159,9 +171,35 @@ const blockCollectionName = 'blocks'
 
     report.blockchainHeight = node.blockHeight
     const msElapsed = moment().diff(report.startAt)
-    const completionPercentage = _.round((report.syncHeight / report.blockchainHeight * 100), 4)
+    const trueSyncCount = (report.missingCount) ? report.syncHeight - report.missingCount : report.syncHeight
+    const completionPercentage = _.round((trueSyncCount / report.blockchainHeight * 100), 4) + '%'
     const blockCountPerMinute = _.round((report.successCount / msElapsed * 1000 * 60), 0)
-    const failPercentage = _.round((report.failedCount / (report.successCount + report.failedCount) * 100), 2)
-    console.log(`[${moment().utc().format('HH:mm:ss')}] ${completionPercentage}% complete | ${blockCountPerMinute} blocks/min | failure: ${failPercentage}%`)
+    const failPercentage = _.round((report.failedCount / (report.successCount + report.failedCount) * 100), 2) + '%'
+
+    let missingPercentage = 'N/A'
+    if (report.missingCount !== undefined) {
+      missingPercentage = _.round((report.missingCount / report.syncHeight * 100), 2) + '%'
+    }
+
+    let excessivePercentage = 'N/A'
+    if (report.excessiveCount !== undefined) {
+      excessivePercentage = _.round((report.excessiveCount / trueSyncCount * 100), 2) + '%'
+    }
+
+    console.log(`[${moment().utc().format('HH:mm:ss')}] ${trueSyncCount}/${report.blockchainHeight} | complete: ${completionPercentage} | ${blockCountPerMinute} blocks/min | failure: ${failPercentage} | missing: ${missingPercentage} | excessive: ${excessivePercentage}`)
   }, SYNC_REPORT_INTERVAL_MS)
+
+  // Generate mesh report
+  const MESH_REPORT_INTERVAL_MS = 60 * 1000
+  setInterval(() => {
+    console.log('## NODES REPORT:')
+    const nodePool = _.filter(neo.mesh.nodes, (n) => (n.isActive && n.pendingRequests > 0))
+    if (nodePool.length === 0) {
+      console.log('> No active pending nodes')
+    }
+
+    nodePool.forEach((n) => {
+      console.log(`> pending: ${n.pendingRequests} | latency: ${n.latency}| height: ${n.blockHeight} | UA: ${n.userAgent} | ${n.endpoint}`)
+    })
+  }, MESH_REPORT_INTERVAL_MS)
 })()
