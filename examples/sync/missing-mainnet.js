@@ -108,7 +108,7 @@ const blockCollectionName = 'blocks'
 
     const startHeight = 1
     const endHeight = storageBlockCount
-    const report = await neo.storage.analyzeBlocks(startHeight, storageBlockCount)
+    const report = await neo.storage.analyzeBlocks(startHeight, endHeight)
 
     const all = []
     for (let i = startHeight; i <= endHeight; i++) {
