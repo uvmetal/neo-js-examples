@@ -86,6 +86,8 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'info' },
     },
     meshOptions: {
+      minActiveNodesRequired: 5,
+      pendingRequestsThreshold: 3,
       loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
@@ -100,6 +102,7 @@ const blockCollectionName = 'blocks'
 
   // Fetch block height info upon mesh ready
   neo.mesh.on('ready', async () => {
+    console.log('neo.mesh is ready.')
     try {
       const blockchainHeight = await neo.mesh.getHighestNode().blockHeight
       console.log('Blockchain Height:', blockchainHeight)
@@ -108,6 +111,7 @@ const blockCollectionName = 'blocks'
     }
   })
   neo.storage.on('ready', async () => {
+    console.log('neo.storage is ready.')
     try {
       const storageBlockCount = await neo.storage.getBlockCount()
       console.log('Highest Count in Storage:', storageBlockCount)
@@ -121,30 +125,28 @@ const blockCollectionName = 'blocks'
     console.log('Storage sync is now up-to-date!')
   })
 
-
-  // Sync report feed
   const report = {
-    success: [],
-    failed: [],
-    max: undefined,
-    startDate: moment()
+    successCount: 0,
+    failedCount: 0,
+    blockchainHeight: undefined,
+    syncHeight: undefined,
+    startAt: moment(),
   }
   neo.syncer.on('storeBlock:complete', (payload) => {
-    const item = {
-      height: payload.height,
-      date: moment(),
-    }
     if (payload.isSuccess) {
-      report.success.push(item)
+      report.successCount += 1
+      if (!report.syncHeight || payload.height > report.syncHeight) {
+        report.syncHeight = payload.height
+      }
     } else {
-      report.failed.push(item)
+      report.failedCount += 1
     }
   })
 
   // Log sync report periodically
   const SYNC_REPORT_INTERVAL_MS = 5 * 1000
   setInterval(() => {
-    if (report.success.length === 0) {
+    if (report.successCount === 0) {
       console.log('No sync progress yet')
       return
     }
@@ -155,12 +157,11 @@ const blockCollectionName = 'blocks'
       return
     }
 
-    report.max = node.blockHeight
-    const msElapsed = moment().diff(report.startDate)
-    const successBlockCount = report.success.length
-    const highestBlock = report.success[report.success.length - 1].height // This is an guesstimate
-    const completionPercentage = Number((highestBlock / report.max * 100).toFixed(4))
-    const blockCountPerMinute = Number((successBlockCount / msElapsed * 1000 * 60).toFixed(0))
-    console.log(`Blocks synced: ${successBlockCount} (${completionPercentage}% complete) - ${blockCountPerMinute} blocks/minute`)
+    report.blockchainHeight = node.blockHeight
+    const msElapsed = moment().diff(report.startAt)
+    const completionPercentage = _.round((report.syncHeight / report.blockchainHeight * 100), 4)
+    const blockCountPerMinute = _.round((report.successCount / msElapsed * 1000 * 60), 0)
+    const failPercentage = _.round((report.failedCount / (report.successCount + report.failedCount) * 100), 2)
+    console.log(`[${moment().utc().format('HH:mm:ss')}] ${completionPercentage}% complete | ${blockCountPerMinute} blocks/min | failure: ${failPercentage}%`)
   }, SYNC_REPORT_INTERVAL_MS)
 })()
