@@ -66,8 +66,8 @@ const endpoints = [
   { endpoint: 'http://neo-node.com:10332' },
 ]
 const storageType = 'mongodb'
-// const dbConnectionString = 'mongodb://localhost/neo_mainnet'
-const dbConnectionString = 'mongodb://localhost/neo_mainnet_beck'
+const dbConnectionString = 'mongodb://localhost/neo_mainnet'
+// const dbConnectionString = 'mongodb://localhost/neo_mainnet_beck'
 const blockCollectionName = 'blocks'
 
 // -- Implementation
@@ -96,7 +96,7 @@ const blockCollectionName = 'blocks'
       // maxHeight: 1200,
       // verifyBlocksIntervalMs: 20 * 1000,
       storeQueueConcurrency: 60,
-      loggerOptions: { level: 'info' },
+      loggerOptions: { level: 'warn' },
     },
     loggerOptions: { level: 'info' },
   })
@@ -148,6 +148,7 @@ const blockCollectionName = 'blocks'
   })
   neo.syncer.on('blockVerification:missingBlocks', (payload) => {
     // console.log('blockVerification:missingBlocks triggered. payload:', payload)
+    console.log('! missingBlocks and excessiveBlocks reviewed.')
     report.missingCount = payload.count
   })
   neo.syncer.on('blockVerification:excessiveBlocks', (payload) => {
@@ -192,8 +193,8 @@ const blockCollectionName = 'blocks'
     console.log(`[${moment().utc().format('HH:mm:ss')}] ${trueSyncCount}/${report.blockchainHeight} | complete: ${completionPercentage} | ${blockCountPerMinute} blocks/min (ETA ${etaText}) | failure: ${failPercentage} | missing: ${missingPercentage} | excessive: ${excessivePercentage}`)
   }, SYNC_REPORT_INTERVAL_MS)
 
-  // Generate mesh report
-  const MESH_REPORT_INTERVAL_MS = 60 * 1000
+  // Generate nodes report
+  const NODES_REPORT_INTERVAL_MS = 60 * 1000
   setInterval(() => {
     console.log('## NODES REPORT:')
     const nodePool = _.filter(neo.mesh.nodes, (n) => (n.isActive && n.pendingRequests > 0))
@@ -204,5 +205,14 @@ const blockCollectionName = 'blocks'
     nodePool.forEach((n) => {
       console.log(`> pending: ${n.pendingRequests} | latency: ${n.latency}| height: ${n.blockHeight} | UA: ${n.userAgent} | ${n.endpoint}`)
     })
-  }, MESH_REPORT_INTERVAL_MS)
+  }, NODES_REPORT_INTERVAL_MS)
+
+  // Generate syncer report
+  const SYNCER_REPORT_INTERVAL_MS = 30 * 1000
+  setInterval(() => {
+    console.log('## SYNCER REPORT:')
+    console.log('> blockWritePointer:', neo.syncer.blockWritePointer)
+    console.log('> storeQueue length:', neo.syncer.storeQueue.length())
+  }, SYNCER_REPORT_INTERVAL_MS)
+
 })()
