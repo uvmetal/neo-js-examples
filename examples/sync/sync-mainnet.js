@@ -1,5 +1,7 @@
 /**
  * Sync Mainnet
+ * This will only append but won't attempt to fill the missing blocks.
+ * This will not prune redundant block either.
  */
 const Neo = require('@cityofzion/neo-js').Neo
 const _ = require('lodash')
@@ -67,7 +69,6 @@ const endpoints = [
 ]
 const storageType = 'mongodb'
 const dbConnectionString = 'mongodb://localhost/neo_mainnet'
-// const dbConnectionString = 'mongodb://localhost/neo_mainnet_beck'
 const blockCollectionName = 'blocks'
 
 // -- Implementation
@@ -92,9 +93,9 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
-      // minHeight: 1001,
-      // maxHeight: 1200,
-      // verifyBlocksIntervalMs: 20 * 1000,
+      checkRedundancyBeforeStoreBlock: false,
+      toSyncForMissingBlocks: false,
+      verifyBlocksIntervalMs: 5 * 60 * 1000,
       storeQueueConcurrency: 60,
       loggerOptions: { level: 'warn' },
     },
