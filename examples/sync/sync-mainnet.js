@@ -186,7 +186,10 @@ const blockCollectionName = 'blocks'
       excessivePercentage = _.round((report.excessiveCount / trueSyncCount * 100), 2) + '%'
     }
 
-    console.log(`[${moment().utc().format('HH:mm:ss')}] ${trueSyncCount}/${report.blockchainHeight} | complete: ${completionPercentage} | ${blockCountPerMinute} blocks/min | failure: ${failPercentage} | missing: ${missingPercentage} | excessive: ${excessivePercentage}`)
+    const requiredMs = _.round((report.blockchainHeight - trueSyncCount) / (report.successCount / msElapsed), 0)
+    const etaText = moment.duration(requiredMs).humanize(true)
+
+    console.log(`[${moment().utc().format('HH:mm:ss')}] ${trueSyncCount}/${report.blockchainHeight} | complete: ${completionPercentage} | ${blockCountPerMinute} blocks/min (ETA ${etaText}) | failure: ${failPercentage} | missing: ${missingPercentage} | excessive: ${excessivePercentage}`)
   }, SYNC_REPORT_INTERVAL_MS)
 
   // Generate mesh report
