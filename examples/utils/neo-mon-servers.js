@@ -1,9 +1,7 @@
 /**
- * neo-mon Servers
- * Extract endpoint values from https://github.com/CityOfZion/neo-mon/blob/master/docs/assets/mainnet.json
+ * Extract neo-mon server data
+ * JSON file from: https://github.com/CityOfZion/neo-mon/blob/master/docs/assets/mainnet.json
  */
-// const Neo = require('@cityofzion/neo-js').Neo
-const _ = require('lodash')
 const serverData = require('./mainnet.json')
 
 // -- Implementation
@@ -24,7 +22,6 @@ const serverData = require('./mainnet.json')
   })
 
   // Render output
-  // const OUTPUT_TYPE = 'list'
   const OUTPUT_TYPE = 'object-array-text'
   if (OUTPUT_TYPE === 'list') {
     endpoints.forEach((endpoint) => {

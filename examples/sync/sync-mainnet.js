@@ -1,7 +1,8 @@
 /**
  * Sync Mainnet
- * This will only append but won't attempt to fill the missing blocks.
- * This will not prune redundant block either.
+ * The most stable approach to sync blocks is to ignore missing blocks and redundancy checks.
+ * You may resolve those concerns are separate script, while this one will purely focus on
+ * fetching new blocks incrementally as fast as it can.
  */
 const Neo = require('@cityofzion/neo-js').Neo
 const _ = require('lodash')
@@ -13,7 +14,9 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // -- Parameters
 
-const network = 'mainnet'
+/**
+ * Explicitly provide list of node endpoints instead of its default list.
+ */
 const endpoints = [
   { endpoint: 'https://seed1.switcheo.network:10331' },
   { endpoint: 'https://seed2.switcheo.network:10331' },
@@ -76,8 +79,12 @@ const blockCollectionName = 'blocks'
 ;(async () => {
   console.log('== Sync Mainnet ==')
 
+  /**
+   * Neo instantiation along with customizations.
+   * Notice that we did not specific network option as we will be providing endpoints explicitly instead.
+   * Be sure that the database is running ready for sync.
+   */
   const neo = new Neo({
-    network,
     endpoints,
     storageType,
     storageOptions: {
@@ -88,21 +95,23 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'info' },
     },
     meshOptions: {
-      minActiveNodesRequired: 5,
-      pendingRequestsThreshold: 3,
+      minActiveNodesRequired: 5,                // Will need to identify at least 5 active nodes between mesh to be considered as 'ready'
+      pendingRequestsThreshold: 3,              // When picking nodes for sync, it will prioritize nodes with less than 3 pending requests
       loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
-      checkRedundancyBeforeStoreBlock: false,
-      toSyncForMissingBlocks: false,
-      verifyBlocksIntervalMs: 5 * 60 * 1000,
-      storeQueueConcurrency: 60,
+      checkRedundancyBeforeStoreBlock: false,   // Disable the check to avoid excessive redundancies before storing blocks to database
+      toSyncForMissingBlocks: false,            // Disable periodically sync for missing blocks between 1 and current stored height
+      verifyBlocksIntervalMs: 5 * 60 * 1000,    // Will perform blocks analysis (check on missing and redundancy blocks) every 5 minutes
+      storeQueueConcurrency: 60,                // Allows 60 concurrent workers to be active at once
       loggerOptions: { level: 'warn' },
     },
     loggerOptions: { level: 'info' },
   })
 
-  // Fetch block height info upon mesh ready
+  /**
+   * Print blockchain's height upon neo.mesh is ready.
+   */
   neo.mesh.on('ready', async () => {
     console.log('neo.mesh is ready.')
     try {
@@ -112,6 +121,10 @@ const blockCollectionName = 'blocks'
       console.warn('neo.mesh.getHighestNode().blockHeight failed. Message:', err.message)
     }
   })
+
+  /**
+   * Print storage's height upon neo.storage is ready.
+   */
   neo.storage.on('ready', async () => {
     console.log('neo.storage is ready.')
     try {
@@ -122,12 +135,17 @@ const blockCollectionName = 'blocks'
     }
   })
 
-  // Info when sync is detected to be 'up to date'
+  /**
+   * Print a message when the storage is detected to be 'up to date'. 
+   */
   neo.syncer.on('UpToDate', () => {
     console.log('Storage sync is now up-to-date!')
   })
 
-  // Live reporting
+  /**
+   * While syncing is happening, we will be building a performance report to keep
+   * track of syncing status.
+   */
   const report = {
     successCount: 0,
     failedCount: 0,
@@ -148,12 +166,11 @@ const blockCollectionName = 'blocks'
     }
   })
   neo.syncer.on('blockVerification:missingBlocks', (payload) => {
-    // console.log('blockVerification:missingBlocks triggered. payload:', payload)
-    console.log('! missingBlocks and excessiveBlocks reviewed.')
+    console.log('! Updated missing block count:', payload.count)
     report.missingCount = payload.count
   })
   neo.syncer.on('blockVerification:excessiveBlocks', (payload) => {
-    // console.log('blockVerification:excessiveBlocks triggered. payload:', payload)
+    console.log('! Updated excessive block count:', payload.count)
     report.excessiveCount = payload.count
   })
 
@@ -215,5 +232,4 @@ const blockCollectionName = 'blocks'
     console.log('> blockWritePointer:', neo.syncer.blockWritePointer)
     console.log('> storeQueue length:', neo.syncer.storeQueue.length())
   }, SYNCER_REPORT_INTERVAL_MS)
-
 })()

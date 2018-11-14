@@ -18,6 +18,9 @@ const verboseKey = 1
 ;(async () => {
   console.log('== neon.js Example ==')
 
+  /**
+   * Perform an example RPC request.
+   */
   const q = new Neon.rpc.Query({ method: 'getblock', params: [blockHeight, verboseKey] })
   const block = await q.execute(rpcUrl)
   console.log('block:', block)

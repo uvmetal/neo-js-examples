@@ -1,6 +1,6 @@
 /**
- * Missing Mainnet
- * This will search for missing blocks and sync them.
+ * Sync for missing blocks on Mainnet
+ * One off script to find missing blocks and sync them.
  */
 const Neo = require('@cityofzion/neo-js').Neo
 const _ = require('lodash')
@@ -12,7 +12,9 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // -- Parameters
 
-const network = 'mainnet'
+/**
+ * Explicitly provide list of node endpoints instead of its default list.
+ */
 const endpoints = [
   { endpoint: 'https://seed1.switcheo.network:10331' },
   { endpoint: 'https://seed2.switcheo.network:10331' },
@@ -75,8 +77,12 @@ const blockCollectionName = 'blocks'
 ;(async () => {
   console.log('== Sync Missing Blocks - Mainnet ==')
 
+  /**
+   * Neo instantiation along with customizations.
+   * Notice that we did not specific network option as we will be providing endpoints explicitly instead.
+   * Be sure that the database is running ready for sync.
+   */
   const neo = new Neo({
-    network,
     endpoints,
     storageType,
     storageOptions: {
@@ -95,32 +101,65 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
-      startOnInit: false,
+      startOnInit: false,                   // Disable syncing progress in the background
       loggerOptions: { level: 'warn' },
     },
     loggerOptions: { level: 'info' },
   })
 
+  /**
+   * Print blockchain's height upon neo.mesh is ready.
+   */
   neo.storage.on('ready', async () => {
     console.log('neo.storage is ready.')
 
-    const storageBlockCount = await neo.storage.getBlockCount()
-    console.log('Highest Count in Storage:', storageBlockCount)
+    /**
+     * Fetch 'current height', which is the document contains the highest
+     * 'height' value.
+     */
+    const currentHeight = await neo.storage.getBlockCount()
+    console.log('currentHeight:', currentHeight)
+    // <example response>
+    // > currentHeight: 2957600
 
-    const startHeight = 1
-    const endHeight = storageBlockCount
+    /**
+     * Perform block analysis to entire block range in storage.
+     * The report will looks something like:
+     * [
+     *   { _id: 1, count: 1 },
+     *   { _id: 2, count: 4 },
+     *   ...
+     * ]
+     */
     console.log(`[${moment().utc().format('HH:mm:ss')}] Analyze blocks...`)
-    const report = await neo.storage.analyzeBlocks(startHeight, endHeight)
+    const report = await neo.storage.analyzeBlocks(1, currentHeight)
     console.log(`[${moment().utc().format('HH:mm:ss')}] Analyze blocks complete.`)
 
+    /**
+     * Build an one-dimensional array to has number from 1 to current height.
+     * Example:
+     * [ 1, 2, 3, .... 1000 ]
+     */
     const all = []
-    for (let i = startHeight; i <= endHeight; i++) {
+    for (let i = 1; i <= currentHeight; i++) {
       all.push(i)
     }
 
-    const availableBlocks = _.map(report, (item) => item._id) // NOTE: Assume we are after redundancy of 1
+    /**
+     * Assume we are after the redundancy of 1.
+     * This will build an one-dimensional (unsorted) array of available heights.
+     * Example:
+     * [ 1, 2, 5, 7 ... ]
+     */
+    const availableBlocks = _.map(report, (item) => item._id)
     console.log('availableBlocks count:', availableBlocks.length)
 
+    /**
+     * This will build an one-dimensional (unsorted) array of missing heights
+     * (by subtracting all heights with available heights).
+     * Example:
+     * [ 3, 4, 6, ... ]
+     */
     const missingBlocks = _.difference(all, availableBlocks)
     console.log('missingBlocks count:', missingBlocks.length)
 
@@ -130,12 +169,21 @@ const blockCollectionName = 'blocks'
       return
     }
 
+    /**
+     * Perform active syncing of the missing blocks 1 by 1, up to the specific
+     * cap (as MAX_SYNC).
+     */
     console.log('attempt to sync for missing blocks...')
     const MAX_SYNC = 100
     const targetCount = missingBlocks.length > MAX_SYNC ? MAX_SYNC : missingBlocks.length
     for (let i=0; i<targetCount; i++) {
       const h = missingBlocks[i]
       try {
+        /**
+         * By performing api.getBlock(), it will programmatically detected that
+         * the storage does not have the desire block, and will attempt to fetch
+         * data from blockchain and store in database.
+         */
         const b = await neo.api.getBlock(h)
         console.log(`[${moment().utc().format('HH:mm:ss')}] #${i} [${h}] hash: ${b.hash}`)
       } catch (err) {
