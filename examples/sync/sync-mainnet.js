@@ -176,16 +176,16 @@ const blockCollectionName = 'blocks'
     const trueSyncCount = (report.missingCount) ? report.syncHeight - report.missingCount : report.syncHeight
     const completionPercentage = _.round((trueSyncCount / report.blockchainHeight * 100), 4) + '%'
     const blockCountPerMinute = _.round((report.successCount / msElapsed * 1000 * 60), 0)
-    const failPercentage = _.round((report.failedCount / (report.successCount + report.failedCount) * 100), 2) + '%'
+    const failPercentage = _.round((report.failedCount / (report.successCount + report.failedCount) * 100), 4) + '%'
 
     let missingPercentage = 'N/A'
     if (report.missingCount !== undefined) {
-      missingPercentage = _.round((report.missingCount / report.syncHeight * 100), 2) + '%'
+      missingPercentage = _.round((report.missingCount / report.syncHeight * 100), 4) + '%'
     }
 
     let excessivePercentage = 'N/A'
     if (report.excessiveCount !== undefined) {
-      excessivePercentage = _.round((report.excessiveCount / trueSyncCount * 100), 2) + '%'
+      excessivePercentage = _.round((report.excessiveCount / trueSyncCount * 100), 4) + '%'
     }
 
     const requiredMs = _.round((report.blockchainHeight - trueSyncCount) / (report.successCount / msElapsed), 0)
