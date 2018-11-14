@@ -7,34 +7,44 @@ process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled rejection. Reason:', reason)
 })
 
+// -- Parameters
+
+const network = 'testnet'
+
 // -- Implementation
 
 ;(async () => {
   console.log('== API Example ==')
 
   /**
-   * Instantiate with testnet blockchain.
+   * Most basic neo instantiation.
    */
-  const testnetNeo = new Neo({
-    network: 'testnet',
+  const neo = new Neo({
+    network,
   })
 
+  /**
+   * By binding an event listener to neo.mesh, you will be able to determine
+   * when the mesh instance has enough identified node to be useful.
+   */
   console.log('Waiting for neo.mesh to be ready...')
-  testnetNeo.mesh.on('ready', async () => {
+  neo.mesh.on('ready', async () => {
     console.log('neo.mesh is now ready!')
 
     /**
      * Perform query through API class.
+     * The method will attempt to fetch from storage first. However, since storage
+     * was never specified, it will always attempt to fetch from the blockchain.
      */
-    const count = await testnetNeo.api.getBlockCount()
-    console.log('Testnet getBlockCount:', count)
+    const count = await neo.api.getBlockCount()
+    console.log('getBlockCount:', count)
     // <example response>
-    // > Testnet getBlockCount: 1985630
+    // > getBlockCount: 1985630
 
     /**
      * Close all background process associate with the neo instance.
      */
-    testnetNeo.close()
+    neo.close()
     console.log('== THE END ==')
   })
 })()

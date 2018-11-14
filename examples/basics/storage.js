@@ -22,7 +22,7 @@ const blockCollectionName = 'blocks'
    * Neo instantiation along with storage settings.
    * Since we have no interest of using syncer and mesh, we can explicit disable their background processes.
    * Notice that we did not specific network option as it is unimportant in this example.
-   * Be sure that the database is running, and there are sufficient blocks in the specified blocks collection.
+   * Be sure that the database is running, and there are sufficient blocks in the specified collection.
    */
   const neo = new Neo({
     storageType,
@@ -40,6 +40,10 @@ const blockCollectionName = 'blocks'
     },
   })
 
+  /**
+   * By binding an event listener to neo.storage, you will be able to determine
+   * when the storage instance is ready to be used.
+   */
   console.log('Waiting for neo.storage to be ready...')
   neo.storage.on('ready', async () => {
     console.log('neo.storage is now ready!')

@@ -14,6 +14,9 @@ const waitSeconds = 6
 
 // -- Implementation
 
+/**
+ * A helper function to emulate terminal's sleep command.
+ */
 const sleep = async (ms) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -60,7 +63,7 @@ const sleep = async (ms) => {
   // > > #4 https://test5.cityofzion.io:443 [isActive: true] [blockHeight: 1985652] [latency: 1294] [UA: /NEO:2.8.0/]
 
   /**
-   * Fetch an active (determined to be online) node that has the lowest latency.
+   * Fetch an active node that has the lowest latency.
    */
   const fastestActiveNode = neo.mesh.getFastestNode(true)
   if (fastestActiveNode) {
