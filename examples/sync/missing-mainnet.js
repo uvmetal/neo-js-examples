@@ -74,6 +74,17 @@ const blockCollectionName = 'blocks'
 
 // -- Implementation
 
+/**
+ * A helper function to emulate terminal's sleep command.
+ */
+const sleep = async (ms) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
+}
+
 ;(async () => {
   console.log('== Sync Missing Blocks - Mainnet ==')
 
@@ -167,6 +178,14 @@ const blockCollectionName = 'blocks'
       neo.close()
       console.log('=== THE END ===')
       return
+    }
+
+    /**
+     * An approach to check/wait for mesh to be ready
+     */
+    while (!neo.mesh.isReady()) {
+      console.log('wait for neo.mesh to become ready...')
+      await sleep(2000)
     }
 
     /**
