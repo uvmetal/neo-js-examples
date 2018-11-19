@@ -14,11 +14,11 @@ const Neo = require('@cityofzion/neo-js').Neo
 
   console.log('Neo class version:', Neo.VERSION)
   // <example response>
-  // > Neo class version: 0.10.0
+  // > Neo class version: 0.11.0
 
   console.log('Neo class user agent:', Neo.UserAgent)
   // <example response>
-  // > Neo class user agent: NEO-JS:0.10.0
+  // > Neo class user agent: NEO-JS:0.11.0
 
   console.log('== THE END ==')
 })()
