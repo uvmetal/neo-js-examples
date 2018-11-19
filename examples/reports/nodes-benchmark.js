@@ -14,15 +14,36 @@ const network = 'mainnet'
 const reportIntervalMs = 10 * 1000
 
 // -- Implementation
+/**
+ * A helper function to emulate terminal's sleep command.
+ */
+const sleep = async (ms) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
+}
 
 ;(async () => {
   console.log('== Nodes Benchmark Report ==')
 
   /**
-   * Most basic neo instantiation.
+   * Neo instantiation along with mesh and node settings.
+   * Since we have no interest of using syncer and mesh, we can explicit disable their background processes.
+   * Notice that we did not specific network option as it is unimportant in this example.
    */
   const neo = new Neo({
     network,
+    meshOptions: {
+      benchmarkIntervalMs: 500,
+    },
+    nodeOptions: {
+      toLogReliability: true,
+    },
+    syncerOptions: {
+      startOnInit: false,
+    },
   })
 
   /**
@@ -33,6 +54,13 @@ const reportIntervalMs = 10 * 1000
   neo.mesh.on('ready', async () => {
     console.log('neo.mesh is now ready!')
 
+    /**
+     * Give mesh some time to build up its logs
+     */
+    console.log('wait for a bit...')
+    await sleep(30 * 1000)
+    console.log('ready to run!')
+     
     /**
      * Periodically perform and output a report.
      * Mesh is constantly benchmark nodes in the background, hence each report
@@ -46,20 +74,20 @@ const reportIntervalMs = 10 * 1000
        */
       for (let i=0; i<neo.mesh.nodes.length; i++) {
         const node = neo.mesh.nodes[i]
-        console.log(`> #${i} ${node.endpoint} [isActive: ${node.isActive}] [blockHeight: ${node.blockHeight}] [latency: ${node.latency}] [UA: ${node.userAgent}]`)
+      
+        const reliabilityPercentage = (node.getNodeReliability() === undefined) ? 'N/A' : (_.round((node.getNodeReliability() * 100), 2) + '%')
+        const lastPingText = (node.lastPingTimestamp) ? _.round((Date.now() - node.lastPingTimestamp) / 1000, 0) + 's' : 'N/A'
+        console.log(`> ${i} [active: ${node.isActive}] [height: ${node.blockHeight}] [lastPing: ${lastPingText}] [lat: ${node.latency}] [shapedLat: ${node.getShapedLatency()}] [UA: ${node.userAgent}] [reliability: ${reliabilityPercentage}] [log count: ${node.requestLogs.length}] ${node.endpoint}`)
       }
       console.log()
     }, reportIntervalMs)
     // <example response>
-    // > > #0 https://seed1.cityofzion.io:443 [isActive: true] [blockHeight: 2961938] [latency: 1663] [UA: /NEO:2.8.0/]
-    // > > #1 https://seed2.cityofzion.io:443 [isActive: true] [blockHeight: 2961918] [latency: 1138] [UA: /NEO:2.8.0/]
-    // > > #2 https://seed3.cityofzion.io:443 [isActive: true] [blockHeight: 2961991] [latency: 1089] [UA: /NEO:2.8.0/]
-    // > > #3 https://seed4.cityofzion.io:443 [isActive: true] [blockHeight: 2961992] [latency: 2426] [UA: /NEO:2.8.0/]
-    // > > #4 https://seed5.cityofzion.io:443 [isActive: true] [blockHeight: 2961979] [latency: 809] [UA: /NEO:2.8.0/]
-    // > > #5 https://seed6.cityofzion.io:443 [isActive: true] [blockHeight: 2961998] [latency: 1763] [UA: /NEO:2.7.6.1/]
-    // > > #6 https://seed7.cityofzion.io:443 [isActive: true] [blockHeight: 2961993] [latency: 1239] [UA: /NEO:2.7.6.1/]
-    // > > #7 https://seed8.cityofzion.io:443 [isActive: true] [blockHeight: 2961995] [latency: 1779] [UA: /NEO:2.7.6.1/]
-    // > > #8 https://seed9.cityofzion.io:443 [isActive: true] [blockHeight: 2962005] [latency: 1236] [UA: /NEO:2.7.6.1/]
-    // > > #9 https://seed0.cityofzion.io:443 [isActive: true] [blockHeight: 2962003] [latency: 1327] [UA: /NEO:2.8.0/]
+    // > > 0 [active: true] [height: 2979794] [lastPing: 13s] [lat: 9416] [shapedLat: 3846] [UA: /Neo:2.9.2/] [reliability: 100%] [log count: 4] https://seed1.switcheo.network:10331
+    // > > 1 [active: true] [height: 2979795] [lastPing: 2s] [lat: 1532] [shapedLat: 1194] [UA: /Neo:2.9.0/] [reliability: 66.67%] [log count: 3] https://seed2.switcheo.network:10331
+    // > > 2 [active: true] [height: 2979790] [lastPing: 11s] [lat: 15587] [shapedLat: 15587] [UA: /Neo:2.9.0/] [reliability: 50%] [log count: 2] https://seed3.switcheo.network:10331
+    // > > 3 [active: false] [height: undefined] [lastPing: 5s] [lat: undefined] [shapedLat: NaN] [UA: undefined] [reliability: 0%] [log count: 1] https://seed4.switcheo.network:10331
+    // > > 4 [active: false] [height: undefined] [lastPing: 5s] [lat: undefined] [shapedLat: NaN] [UA: undefined] [reliability: 0%] [log count: 1] https://seed5.switcheo.network:10331
+    // > > 5 [active: true] [height: 2979750] [lastPing: 10s] [lat: 1309] [shapedLat: 1004] [UA: /NEO:2.8.0/] [reliability: 100%] [log count: 5] https://seed1.cityofzion.io:443
+    // > > 6 [active: true] [height: 2979751] [lastPing: 8s] [lat: 775] [shapedLat: 967] [UA: /NEO:2.8.0/] [reliability: 100%] [log count: 5] https://seed2.cityofzion.io:443
   })
 })()
