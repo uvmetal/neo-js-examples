@@ -138,7 +138,7 @@ const blockCollectionName = 'blocks'
   /**
    * Print a message when the storage is detected to be 'up to date'. 
    */
-  neo.syncer.on('UpToDate', () => {
+  neo.syncer.on('upToDate', () => {
     console.log('Storage sync is now up-to-date!')
   })
 
