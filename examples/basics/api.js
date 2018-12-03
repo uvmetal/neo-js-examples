@@ -24,12 +24,12 @@ const network = 'testnet'
   })
 
   /**
-   * By binding an event listener to neo.mesh, you will be able to determine
-   * when the mesh instance has enough identified node to be useful.
+   * By binding an event listener to neo.api, you will be able to determine
+   * when the api and its dependencies are ready to use.
    */
-  console.log('Waiting for neo.mesh to be ready...')
-  neo.mesh.on('ready', async () => {
-    console.log('neo.mesh is now ready!')
+  console.log('Waiting for neo.api to be ready...')
+  neo.api.on('ready', async () => {
+    console.log('neo.api is now ready!')
 
     /**
      * Perform query through API class.
