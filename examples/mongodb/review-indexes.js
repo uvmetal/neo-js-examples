@@ -17,6 +17,7 @@ const dbConnectionString = 'mongodb://localhost/neo_mainnet'
 
   /**
    * Neo instantiation along with storage settings.
+   * Notice the explicit "reviewIndexesOnConnect: true", this will initiates review indexes task when storage is ready.
    * Since we have no interest of using syncer and mesh, we can explicit disable their background processes.
    * Be sure that the database is running, and there are sufficient blocks in the specified collection.
    */
@@ -37,31 +38,19 @@ const dbConnectionString = 'mongodb://localhost/neo_mainnet'
 
   let taskComplete = false
 
+  /**
+   * Add event listener to inform us when the review indexes task has began.
+   */
   neo.storage.on('reviewIndexes:init', (payload) => {
     console.log('reviewIndexes:init triggered. payload:', payload)
   })
 
+  /**
+   * Add event listener to inform us when the review indexes task has completed.
+   */
   neo.storage.on('reviewIndexes:complete', (payload) => {
     console.log('reviewIndexes:complete triggered. payload:', payload)
     taskComplete = true
-  })
-
-  /**
-   * By binding an event listener to neo.storage, you will be able to determine
-   * when the database connection is ready to go.
-   */
-  console.log('Waiting for neo.storage to be ready...')
-  neo.storage.on('ready', async () => {
-    console.log('neo.storage is now ready!')
-
-    /**
-     * Fetch 'current height', which is the document contains the highest
-     * 'height' value.
-     */
-    const currentHeight = await neo.storage.getBlockCount()
-    console.log('currentHeight:', currentHeight)
-    // <example response>
-    // > currentHeight: 2957600
   })
 
   // -- Completion checker
