@@ -40,7 +40,7 @@ const blockCollectionName = 'blocks'
       loggerOptions: { level: 'info' },
     },
     meshOptions: {
-      loggerOptions: { level: 'info' },
+      loggerOptions: { level: 'warn' },
     },
     syncerOptions: {
       loggerOptions: { level: 'info' },

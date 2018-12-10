@@ -1,6 +1,6 @@
 # Code Examples for `neo-js`
 
-This project is currently test against `neo-js` version: `0.12.0`
+This project is currently test against `neo-js` version: `0.13.0`
 
 ## Installation
 
