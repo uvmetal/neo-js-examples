@@ -128,10 +128,10 @@ const blockCollectionName = 'blocks'
   neo.storage.on('ready', async () => {
     console.log('neo.storage is ready.')
     try {
-      const storageBlockCount = await neo.storage.getBlockCount()
+      const storageBlockCount = await neo.storage.getHighestBlockHeight()
       console.log('Highest Count in Storage:', storageBlockCount)
     } catch (err) {
-      console.warn('neo.storage.getBlockCount() failed. Message:', err.message)
+      console.warn('neo.storage.getHighestBlockHeight() failed. Message:', err.message)
     }
   })
 

@@ -128,7 +128,7 @@ const sleep = async (ms) => {
      * Fetch 'current height', which is the document contains the highest
      * 'height' value.
      */
-    const currentHeight = await neo.storage.getBlockCount()
+    const currentHeight = await neo.storage.getHighestBlockHeight()
     console.log('currentHeight:', currentHeight)
     // <example response>
     // > currentHeight: 2957600
